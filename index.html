@@ -1111,7 +1111,23 @@
             b.querySelector("button").addEventListener("click", function(){ b.remove(); });
             document.body.appendChild(b);
           }
+          var agentReplied = false, waitTimer = null, waitCount = 0;
+          function hideWait(){ var w = document.getElementById("wait-note"); if (w) w.remove(); }
+          function showWait(){
+            if (agentReplied) return;
+            hideWait();
+            var w = document.createElement("div");
+            w.id = "wait-note";
+            w.setAttribute("role","status");
+            w.style.cssText = "position:fixed;top:16px;left:50%;transform:translateX(-50%);max-width:min(92vw,420px);z-index:2147483000;background:#e8f7ef;color:#0b3d24;border:1px solid #1f9254;border-radius:12px;padding:12px 16px;font:15px/1.45 system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.2);text-align:center";
+            waitCount += 1;
+            w.textContent = waitCount <= 5 ? "Tu mensaje nos ha llegado. Ahora mismo no podemos responder, pero en breve te contestaremos." : "En breve contestaremos.";
+            document.body.appendChild(w);
+            setTimeout(hideWait, 9000);
+          }
+          window.Tawk_API.onChatMessageAgent = function(){ agentReplied = true; clearTimeout(waitTimer); hideWait(); };
           window.Tawk_API.onChatMessageVisitor = function(message){
+            agentReplied = false; clearTimeout(waitTimer); waitTimer = setTimeout(showWait, 20000);
             try { if (CRISIS_RE.test(String(message))) showCrisisHelp(); } catch(e){}
           };
           var cs = document.createElement("script");
